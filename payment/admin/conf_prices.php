@@ -27,8 +27,12 @@
         $pub_prices = Params::getParam("pub_prices");
         $pr_prices  = Params::getParam("pr_prices");
         foreach($pr_prices as $k => $v) {
-            $mp->insertPrice($k, $pub_prices[$k]==''?'NULL':$pub_prices[$k], $v==''?'NULL':$v);
+            $mp->insertPrice($k, $pub_prices[$k]==''?NULL:$pub_prices[$k], $v==''?NULL:$v);
         }
+        // HACK : This will make possible use of the flash messages ;)
+        ob_get_clean();
+        osc_add_flash_ok_message(__('Congratulations, the plugin is now configured', 'payment'), 'admin');
+        osc_redirect_to(osc_route_admin_url('payment-admin-prices'));
     }
 
     $categories = Category::newInstance()->toTreeAll();
@@ -39,8 +43,7 @@
         $cat_prices[$p['fk_i_category_id']]['f_premium_cost'] = $p['f_premium_cost'];
     }
 
-
-    function drawCategories($categories, $depth = 0) {
+    function drawCategories($categories, $depth = 0, $cat_prices) {
         foreach($categories as $c) { ?>
             <tr>
                 <td>
@@ -53,7 +56,7 @@
                     <input style="width:150px;text-align:right;" type="text" name="pr_prices[<?php echo $c['pk_i_id']?>]" id="pr_prices[<?php echo $c['pk_i_id']?>]" value="<?php echo isset($cat_prices[$c['pk_i_id']]) ? $cat_prices[$c['pk_i_id']]['f_premium_cost'] : ''; ?>" />
                 </td>
             </tr>
-        <?php drawCategories($c['categories'], $depth+1);
+        <?php drawCategories($c['categories'], $depth+1, $cat_prices);
         }
     };
 
@@ -67,7 +70,7 @@
                     <form name="payment_form" id="payment_form" action="<?php echo osc_admin_base_url(true);?>" method="POST" enctype="multipart/form-data" >
                         <input type="hidden" name="page" value="plugins" />
                         <input type="hidden" name="action" value="renderplugin" />
-                        <input type="hidden" name="file" value="<?php echo osc_plugin_folder(__FILE__); ?>conf_prices.php" />
+                        <input type="hidden" name="route" value="payment-admin-prices" />
                         <input type="hidden" name="plugin_action" value="done" />
                         <table border="0" cellpadding="0" cellspacing="0">
                             <tr>
@@ -75,7 +78,7 @@
                                 <td style="width:175px;"><?php echo sprintf(__('Publish fee (%s)', 'payment'), osc_get_preference('currency', 'payment')); ?></td>
                                 <td style="width:175px;"><?php echo sprintf(__('Premium fee (%s)', 'payment'), osc_get_preference('currency', 'payment')); ?></td>
                             </tr>
-                            <?php drawCategories($categories); ?>
+                            <?php drawCategories($categories, 0, $cat_prices); ?>
                         </table>
                         <button type="submit" style="float: right;"><?php _e('Update', 'payment'); ?></button>
                     </form>

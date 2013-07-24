@@ -126,7 +126,7 @@
             ?>
 
 
-                <form action="<?php echo $ENDPOINT; ?>" method="post" id="paypal_<?php echo $r; ?>">
+                <form class="nocsrf" action="<?php echo $ENDPOINT; ?>" method="post" id="paypal_<?php echo $r; ?>">
                   <input type="hidden" name="cmd" value="_xclick" />
                   <input type="hidden" name="notify_url" value="<?php echo $NOTIFYURL; ?>" />
                   <input type="hidden" name="amount" value="<?php echo $amount; ?>" />

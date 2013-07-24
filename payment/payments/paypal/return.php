@@ -14,8 +14,9 @@
         $data = payment_get_custom(Params::getParam('custom'));
 
         $product_type = explode('x', Params::getParam('item_number'));
-        $status = Paypal::processStandardPayment();
-        if($status==PAYMENT_COMPLETED || $status==PAYMENT_ALREADY_PAID) {
+        $tx = Params::getParam('tx')==''?Params::getParam('tx'):Params::getParam('txn_id');
+        $payment = ModelPayment::newInstance()->getPayment($tx);
+        if (isset($payment['pk_i_id'])) {
             osc_add_flash_ok_message(__('Payment processed correctly', 'payment'));
             if($product_type[0]==101) {
                 $item = Item::newInstance()->findByPrimaryKey($product_type[2]);

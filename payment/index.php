@@ -58,14 +58,18 @@ Short Name: payments
      * Load payment's js library
      */
     function payment_load_js() {
-        if(osc_get_preference('paypal_enabled', 'payment')==1) {
-            osc_register_script('paypal', 'https://www.paypalobjects.com/js/external/dg.js', array('jquery'));
-        }
-        if(osc_get_preference('blockchain_enabled', 'payment')==1) {
-            osc_register_script('blockchain', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
-        }
-        if(osc_get_preference('braintree_enabled', 'payment')==1) {
-            osc_register_script('braintree', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
+        if(Params::getParam('page')=='custom') {
+            if(osc_get_preference('paypal_enabled', 'payment')==1) {
+                osc_register_script('paypal', 'https://www.paypalobjects.com/js/external/dg.js', array('jquery'));
+                osc_enqueue_script('paypal');
+            }
+            if(osc_get_preference('blockchain_enabled', 'payment')==1) {
+                osc_register_script('blockchain', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
+                osc_enqueue_script('blockchain');
+            }
+            if(osc_get_preference('braintree_enabled', 'payment')==1) {
+                //osc_register_script('braintree', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
+            }
         }
     }
 
@@ -84,7 +88,14 @@ Short Name: payments
                 osc_get_preference('paypal_standard', 'payment')==0)))
             ||
             // WE HAVE CORRECTLY SETUP BLOCKCHAIN
-            (osc_get_preference('blockchain_enabled', 'payment')==1 && osc_get_preference('blockchain_btc_address', 'payment')!='')) {
+            (osc_get_preference('blockchain_enabled', 'payment')==1 && osc_get_preference('blockchain_btc_address', 'payment')!='')
+            ||
+            // WE HAVE CORRECTLY SETUP BRAINTREE
+            (osc_get_preference('braintree_enabled', 'payment')==1 &&
+                osc_get_preference('braintree_merchant_id', 'payment')!='' &&
+                osc_get_preference('braintree_public_key', 'payment')!='' &&
+                osc_get_preference('braintree_private_key', 'payment')!='')
+            ) {
             // Need to pay to publish ?
             if(osc_get_preference('pay_per_post', 'payment')==1) {
                 $category_fee = ModelPayment::newInstance()->getPublishPrice($item['fk_i_category_id']);
@@ -117,7 +128,7 @@ Short Name: payments
      * Create a new menu option on users' dashboards
      */
     function payment_user_menu() {
-        echo '<li class="opt_payment" ><a href="'.osc_route_url('payment-user-menu').'" >'.__("Item payment status", "payment").'</a></li>' ;
+        echo '<li class="opt_payment" ><a href="'.osc_route_url('payment-user-menu').'" >'.__("Listings payment status", "payment").'</a></li>' ;
         if((osc_get_preference('pack_price_1', 'payment')!='' && osc_get_preference('pack_price_1', 'payment')!='0') || (osc_get_preference('pack_price_2', 'payment')!='' && osc_get_preference('pack_price_2', 'payment')!='0') || (osc_get_preference('pack_price_3', 'payment')!='' && osc_get_preference('pack_price_3', 'payment')!='0')) {
             echo '<li class="opt_payment_pack" ><a href="'.osc_route_url('payment-user-pack').'" >'.__("Buy credit for payments", "payment").'</a></li>' ;
         }
@@ -184,9 +195,9 @@ Short Name: payments
     osc_add_route('payment-admin-prices', 'payment/admin/prices', 'payment/admin/prices', osc_plugin_folder(__FILE__).'admin/conf_prices.php');
     osc_add_route('payment-publish', 'payment/publish/([0-9]+)', 'payment/publish/{itemId}', osc_plugin_folder(__FILE__).'user/payperpublish.php');
     osc_add_route('payment-premium', 'payment/premium/([0-9]+)', 'payment/premium/{itemId}', osc_plugin_folder(__FILE__).'user/makepremium.php');
-    osc_add_route('payment-user-menu', 'payment/menu', 'payment/menu', osc_plugin_folder(__FILE__).'user/menu.php');
-    osc_add_route('payment-user-pack', 'payment/pack', 'payment/pack', osc_plugin_folder(__FILE__).'user/pack.php');
-    osc_add_route('payment-wallet', 'payment/wallet/([^\/]+)/([^\/]+)/([^\/]+)/(.+)', 'payment/wallet/{a}/{extra}/{desc}/{product}', osc_plugin_folder(__FILE__).'/user/wallet.php');
+    osc_add_route('payment-user-menu', 'payment/menu', 'payment/menu', osc_plugin_folder(__FILE__).'user/menu.php', true);
+    osc_add_route('payment-user-pack', 'payment/pack', 'payment/pack', osc_plugin_folder(__FILE__).'user/pack.php', true);
+    osc_add_route('payment-wallet', 'payment/wallet/([^\/]+)/([^\/]+)/([^\/]+)/(.+)', 'payment/wallet/{a}/{extra}/{desc}/{product}', osc_plugin_folder(__FILE__).'/user/wallet.php', true);
 
     /**
      * ADD HOOKS
@@ -198,8 +209,8 @@ Short Name: payments
 
     osc_add_hook('admin_menu_init', 'payment_admin_menu');
 
-    osc_add_hook('header', 'payment_load_js');
-    osc_add_hook('posted_item', 'payment_publish', 3);
+    osc_add_hook('init', 'payment_load_js');
+    osc_add_hook('posted_item', 'payment_publish', 10);
     osc_add_hook('user_menu', 'payment_user_menu');
     osc_add_hook('cron_hourly', 'payment_cron');
     osc_add_hook('item_premium_off', 'payment_premium_off');

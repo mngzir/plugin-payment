@@ -34,19 +34,19 @@
         osc_set_preference('paypal_api_password', payment_crypt(Params::getParam("paypal_api_password")), 'payment', 'STRING');
         osc_set_preference('paypal_api_signature', payment_crypt(Params::getParam("paypal_api_signature")), 'payment', 'STRING');
         osc_set_preference('paypal_email', Params::getParam("paypal_email"), 'payment', 'STRING');
-        osc_set_preference('paypal_standard', Params::getParam("paypal_standard_payment") ? Params::getParam("paypal_standard_payment") : '0', 'payment', 'BOOLEAN');
+        osc_set_preference('paypal_standard', Params::getParam("paypal_standard") ? Params::getParam("paypal_standard") : '0', 'payment', 'BOOLEAN');
         osc_set_preference('paypal_sandbox', Params::getParam("paypal_sandbox") ? Params::getParam("paypal_sandbox") : '0', 'payment', 'BOOLEAN');
         osc_set_preference('paypal_enabled', Params::getParam("paypal_enabled") ? Params::getParam("paypal_enabled") : '0', 'payment', 'BOOLEAN');
 
-        osc_set_preference('blockchain_btc_address', Params::getParam("blockchain_btc_address") ? Params::getParam("blockchain_btc_address") : '', 'payment', 'STRING');
+        /*osc_set_preference('blockchain_btc_address', Params::getParam("blockchain_btc_address") ? Params::getParam("blockchain_btc_address") : '', 'payment', 'STRING');
         osc_set_preference('blockchain_enabled', Params::getParam("blockchain_enabled") ? Params::getParam("blockchain_enabled") : '0', 'payment', 'BOOLEAN');
 
-        osc_set_preference('braintree_merchant_id', Params::getParam("braintree_merchant_id") ? Params::getParam("braintree_merchant_id") : '', 'payment', 'STRING');
-        osc_set_preference('braintree_public_key', Params::getParam("braintree_public_key") ? Params::getParam("braintree_public_key") : '', 'payment', 'STRING');
-        osc_set_preference('braintree_private_key', Params::getParam("braintree_private_key") ? Params::getParam("braintree_private_key") : '', 'payment', 'STRING');
-        osc_set_preference('braintree_encryption_key', Params::getParam("braintree_encryption_key") ? Params::getParam("braintree_encryption_key") : '', 'payment', 'STRING');
+        osc_set_preference('braintree_merchant_id', payment_crypt(Params::getParam("braintree_merchant_id")), 'payment', 'STRING');
+        osc_set_preference('braintree_public_key', payment_crypt(Params::getParam("braintree_public_key")), 'payment', 'STRING');
+        osc_set_preference('braintree_private_key', payment_crypt(Params::getParam("braintree_private_key")), 'payment', 'STRING');
+        osc_set_preference('braintree_encryption_key', payment_crypt(Params::getParam("braintree_encryption_key")), 'payment', 'STRING');
         osc_set_preference('braintree_sandbox', (Params::getParam("braintree_sandbox") == 'sandbox') ? 'sandbox' : 'production', 'payment', 'STRING');
-        osc_set_preference('braintree_enabled', Params::getParam("braintree_enabled") ? Params::getParam("braintree_enabled") : '0', 'payment', 'BOOLEAN');
+        osc_set_preference('braintree_enabled', Params::getParam("braintree_enabled") ? Params::getParam("braintree_enabled") : '0', 'payment', 'BOOLEAN');*/
 
         // HACK : This will make possible use of the flash messages ;)
         ob_get_clean();
@@ -63,7 +63,7 @@
             width: '90%',
             title: '<?php echo osc_esc_js( __('Paypal help', 'payment') ); ?>'
         });
-        $("#dialog-blockchain").dialog({
+        <?php /* $("#dialog-blockchain").dialog({
             autoOpen: false,
             modal: true,
             width: '90%',
@@ -74,7 +74,7 @@
             modal: true,
             width: '90%',
             title: '<?php echo osc_esc_js( __('Braintree help', 'payment') ); ?>'
-        });
+        }); */ ?>
     });
 </script>
 <?php if(PAYMENT_CRYPT_KEY=='randompasswordchangethis') {
@@ -87,7 +87,7 @@
         <form name="payment_form" action="<?php echo osc_admin_base_url(true); ?>" method="post">
             <input type="hidden" name="page" value="plugins" />
             <input type="hidden" name="action" value="renderplugin" />
-            <input type="hidden" name="file" value="<?php echo osc_plugin_folder(__FILE__); ?>conf.php" />
+            <input type="hidden" name="route" value="payment-admin-conf" />
             <input type="hidden" name="plugin_action" value="done" />
             <fieldset>
                 <div class="form-horizontal">
@@ -194,7 +194,7 @@
                     </div>
                     <div class="form-row paypal hide">
                         <div class="form-label"><?php _e('Paypal email', 'payment'); ?></div>
-                        <div class="form-controls"><input type="text" class="xlarge" name="paypal_email" value="<?php echo osc_get_preference('paypal_api_email', 'payment'); ?>" /></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="paypal_email" value="<?php echo osc_get_preference('paypal_email', 'payment'); ?>" /></div>
                     </div>
                     <div class="form-row paypal hide">
                         <div class="form-label"><?php _e('Standard payments'); ?></div>
@@ -218,6 +218,7 @@
                             </div>
                         </div>
                     </div>
+                    <?php /*
                     <h2 class="render-title separate-top"><?php _e('Blockchain settings', 'payment'); ?> <span><a href="javascript:void(0);" onclick="$('#dialog-blockchain').dialog('open');" ><?php _e('help', 'payment'); ?></a></span> <span style="font-size: 0.5em" ><a href="javascript:void(0);" onclick="$('.blockchain').toggle();" ><?php _e('Show options', 'payment'); ?></a></span></h2>
                     <div class="form-row blockchain hide">
                         <div class="form-label"><?php _e('Enable Blockchain'); ?></div>
@@ -259,20 +260,22 @@
                     </div>
                     <div class="form-row braintree hide">
                         <div class="form-label"><?php _e('Braintree mercahnt id', 'payment'); ?></div>
-                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_merchant_id" value="<?php echo osc_get_preference('braintree_merchant_id', 'payment'); ?>" /></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_merchant_id" value="<?php echo payment_decrypt(osc_get_preference('braintree_merchant_id', 'payment')); ?>" /></div>
                     </div>
                     <div class="form-row braintree hide">
                         <div class="form-label"><?php _e('Braintree public key', 'payment'); ?></div>
-                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_public_key" value="<?php echo osc_get_preference('braintree_public_key', 'payment'); ?>" /></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_public_key" value="<?php echo payment_decrypt(osc_get_preference('braintree_public_key', 'payment')); ?>" /></div>
                     </div>
                     <div class="form-row braintree hide">
                         <div class="form-label"><?php _e('Braintree private key', 'payment'); ?></div>
-                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_private_key" value="<?php echo osc_get_preference('braintree_private_key', 'payment'); ?>" /></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_private_key" value="<?php echo payment_decrypt(osc_get_preference('braintree_private_key', 'payment')); ?>" /></div>
                     </div>
                     <div class="form-row braintree hide">
                         <div class="form-label"><?php _e('Braintree encryption key', 'payment'); ?></div>
-                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_" value="<?php echo osc_get_preference('braintree_', 'payment'); ?>" /></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="braintree_encryption_key" value="<?php echo payment_decrypt(osc_get_preference('braintree_encryption_key',
+                                'payment')); ?>" /></div>
                     </div>
+                    */ ?>
                     <div class="clear"></div>
                     <div class="form-actions">
                         <input type="submit" id="save_changes" value="<?php echo osc_esc_html( __('Save changes') ); ?>" class="btn btn-submit" />
@@ -336,7 +339,7 @@
         </div>
     </div>
 </form>
-<form id="dialog-blockchain" method="get" action="#" class="has-form-actions hide">
+<?php /* <form id="dialog-blockchain" method="get" action="#" class="has-form-actions hide">
     <div class="form-horizontal">
         <div class="form-row">
             <h3><?php _e('Learn more about Bitcoins', 'payment'); ?></h3>
@@ -384,4 +387,4 @@
             </div>
         </div>
     </div>
-</form>
+</form> */ ?>

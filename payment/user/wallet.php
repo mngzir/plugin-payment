@@ -2,9 +2,9 @@
 $url = '';
 $mp = ModelPayment::newInstance();
 if(osc_is_web_user_logged_in()) {
-    $extra = payment_get_custom(Params::getParam('extra'));;
-    $product_type = explode('x', Params::getParam("product"));
-    $item = Item::newInstance()->findByPrimaryKey($extra['itemid']);
+    $data = payment_get_custom(Params::getParam('extra'));;
+    $product_type = explode('x', $data['product']);
+    $item = Item::newInstance()->findByPrimaryKey($data['itemid']);
     $wallet = $mp->getWallet(osc_logged_user_id());
     $category_fee = 0;
     if(osc_logged_user_id()==$item['fk_i_user_id']) {

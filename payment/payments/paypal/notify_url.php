@@ -65,7 +65,7 @@
             foreach ($_REQUEST as $key => $value) {
                 $emailtext .= $key . ' = ' . $value . '\n\n';
             }
-            mail(osc_contact_email() , 'OSCLASS PAYPAL DEBUG2', $emailtext . '\n\n ---------------- \n\n' . $req);
+            mail(osc_contact_email() , 'OSCLASS PAYPAL DEBUG', $emailtext . '\n\n ---------------- \n\n' . $req);
         }
     } else if (strcmp($res, 'INVALID') == 0) {
         // INVALID: Do nothing

@@ -116,16 +116,23 @@
             osc_set_preference('pack_price_2', '', 'payment', 'STRING');
             osc_set_preference('pack_price_3', '', 'payment', 'STRING');
 
-            osc_set_preference('paypal_api_username', '', 'payment', 'STRING');
-            osc_set_preference('paypal_api_password', '', 'payment', 'STRING');
-            osc_set_preference('paypal_api_signature', '', 'payment', 'STRING');
+            osc_set_preference('paypal_api_username', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('paypal_api_password', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('paypal_api_signature', payment_crypt(''), 'payment', 'STRING');
             osc_set_preference('paypal_email', '', 'payment', 'STRING');
             osc_set_preference('paypal_standard', '1', 'payment', 'BOOLEAN');
             osc_set_preference('paypal_sandbox', '1', 'payment', 'BOOLEAN');
-            osc_set_preference('paypal_enabled', '1', 'payment', 'BOOLEAN');
+            osc_set_preference('paypal_enabled', '0', 'payment', 'BOOLEAN');
 
             osc_set_preference('blockchain_btc_address', '', 'payment', 'STRING');
-            osc_set_preference('blockchain_enabled', '1', 'payment', 'BOOLEAN');
+            osc_set_preference('blockchain_enabled', '0', 'payment', 'BOOLEAN');
+
+            osc_set_preference('braintree_merchant_id', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('braintree_public_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('braintree_private_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('braintree_encryption_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('braintree_sandbox', 'sandbox', 'payment', 'STRING');
+            osc_set_preference('braintree_enabled', '0', 'payment', 'BOOLEAN');
 
             $this->dao->select('pk_i_id') ;
             $this->dao->from(DB_TABLE_PREFIX.'t_item') ;
@@ -192,6 +199,12 @@
             osc_delete_preference('blockchain_btc_address', 'payment');
             osc_delete_preference('blockchain_enabled', 'payment');
 
+            osc_delete_preference('braintree_merchant_id');
+            osc_delete_preference('braintree_public_key');
+            osc_delete_preference('braintree_private_key');
+            osc_delete_preference('braintree_encryption_key');
+            osc_delete_preference('braintree_sandbox');
+            osc_delete_preference('braintree_enabled');
         }
 
         public function versionUpdate() {
@@ -283,7 +296,9 @@
             $result = $this->dao->get();
             if($result) {
                 $cat = $result->row();
-                return $cat["f_publish_cost"];
+                if(isset($cat['f_publish_cost'])) {
+                    return $cat["f_publish_cost"];
+                }
             }
             return osc_get_preference('default_publish_cost', 'payment');
         }
@@ -295,7 +310,9 @@
             $result = $this->dao->get();
             if($result) {
                 $cat = $result->row();
-                return $cat["f_premium_cost"];
+                if(isset($cat['f_premium_cost'])) {
+                    return $cat["f_premium_cost"];
+                }
             }
             return osc_get_preference('default_premium_cost', 'payment');
         }
@@ -429,7 +446,7 @@
         public function addWallet($user, $amount) {
             $amount = (int)($amount*1000000000000);
             $wallet = $this->getWallet($user);
-            if($wallet) {
+            if(isset($wallet['i_amount'])) {
                 $this->dao->update($this->getTable_wallet(), array('i_amount' => $amount+$wallet['i_amount']), array('fk_i_user_id' => $user));
             } else {
                 $this->dao->insert($this->getTable_wallet(), array('fk_i_user_id' => $user, 'i_amount' => $amount));

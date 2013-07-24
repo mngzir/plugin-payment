@@ -47,11 +47,11 @@
                         <p id="braintree-desc"></p>
                         <p id="braintree-price"></p>
                     </div>
-                    <form action="<?php echo osc_base_url(true); ?>" method="POST" id="braintree-payment-form" style="display:none;" >
+                    <form action="<?php echo osc_base_url(true); ?>" method="POST" id="braintree-payment-form" >
                         <input type="hidden" name="page" value="ajax" />
                         <input type="hidden" name="action" value="runhook" />
                         <input type="hidden" name="hook" value="braintree" />
-                        <input type="hidden" name="extra" value="" id="extra" />
+                        <input type="hidden" name="extra" value="" id="braintree-extra" />
                         <p>
                             <label><?php _e('Card number', 'payment'); ?></label>
                             <input type="text" size="20" autocomplete="off" data-encrypted-name="braintree_number" />
@@ -71,6 +71,13 @@
             </div>
             <script type="text/javascript" src="https://js.braintreegateway.com/v1/braintree.js"></script>
             <script type="text/javascript">
+                $(document).ready(function(){
+                    $("#braintree-dialog").dialog({
+                        autoOpen: false,
+                        modal: true
+                    });
+                });
+
                 var ajax_submit = function (e) {
                     form = $('#braintree-payment-form');
                     e.preventDefault();
@@ -79,43 +86,58 @@
                     $("#braintree-results").html('<?php _e('Processing the payment, please wait', 'payment');?>');
                     $("#braintree-results").show();
                     $.post(form.attr('action'), form.serialize(), function (data) {
+                        console.log(data);
                         $("#braintree-results").html(data);
                     });
                 };
-                var braintree = Braintree.create(osc_get_preference('braintree_encryption_key', 'payment'));
+                var braintree = Braintree.create('<?php echo payment_decrypt(osc_get_preference('braintree_encryption_key', 'payment')); ?>');
                 braintree.onSubmitEncryptForm('braintree-payment-form', ajax_submit);
 
                 function braintree_pay(amount, description, itemnumber, extra) {
+                    $("#braintree-extra").prop('value', extra);
                     $("#braintree-desc").html(description);
                     $("#braintree-price").html(amount+" <?php echo osc_get_preference("currency", "payment");?>");
                     $("#braintree-results").html('');
                     $("#braintree-results").hide();
                     $("#submit").removeAttr('disabled');
-                    $("#braintree-payment-form").show();
+                    $("#braintree-info").show();
                     $("#braintree-dialog").dialog('open');
                 }
 
-                $(document).ready(function(){
-                    $("#braintree-dialog").dialog({
-                        autoOpen: false,
-                        modal: true
-                    });
-                });
-
             </script>
         <?php
+        }
+
+        public static  function ajaxPayment() {
+            $status = BraintreePayment::processPayment();
+            if ($status==PAYMENT_COMPLETED) {
+                printf(__('Success! Please write down this transaction ID in case you have any problem: %s', 'payment'), Params::getParam('braintree_transaction_id'));
+            } else if ($status==PAYMENT_ALREADY_PAID) {
+                _e('Warning! This payment was already paid', 'payment');
+            } else {
+                _e('There were an error processing your payment', 'payment');
+            }
         }
 
         public static function processPayment() {
             require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'lib/Braintree.php';
 
             Braintree_Configuration::environment(osc_get_preference('braintree_sandbox', 'payment'));
-            Braintree_Configuration::merchantId(osc_get_preference('braintree_merchant_id', 'payment'));
-            Braintree_Configuration::publicKey(osc_get_preference('braintree_public_key', 'payment'));
-            Braintree_Configuration::privateKey(osc_get_preference('braintree_private_key', 'payment'));
+            Braintree_Configuration::merchantId(payment_decrypt(osc_get_preference('braintree_merchant_id', 'payment')));
+            Braintree_Configuration::publicKey(payment_decrypt(osc_get_preference('braintree_public_key', 'payment')));
+            Braintree_Configuration::privateKey(payment_decrypt(osc_get_preference('braintree_private_key', 'payment')));
+
+            $data = payment_get_custom(Params::getParam('extra'));
+
+            $tmp = explode('x', $data['product']);
+            if(count($tmp)>1) {
+                $amount = $tmp[1];
+            } else {
+                return PAYMENT_FAILED;
+            }
 
             $result = Braintree_Transaction::sale(array(
-                'amount' => Params::getParam('amount'),
+                'amount' => $amount,
                 'creditCard' => array(
                     'number' => Params::getParam('braintree_number'),
                     'cvv' => Params::getParam('braintree_cvv'),
@@ -127,11 +149,12 @@
                 )
             ));
 
+            print_r($result);
+
             if($result->success==1) {
                 Params::setParam('braintree_transaction_id', $result->transaction->id);
                 $exists = ModelPayment::newInstance()->getPaymentByCode($result->transaction->id, 'BRAINTREE');
                 if(isset($exists['pk_i_id'])) { return PAYMENT_ALREADY_PAID; }
-                $data = payment_get_custom(Params::getParam('extra'));
                 $product_type = explode('x', $data['product']);
                 // SAVE TRANSACTION LOG
                 $payment_id = ModelPayment::newInstance()->saveLog(

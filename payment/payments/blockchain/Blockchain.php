@@ -43,7 +43,7 @@
             $CALLBACK_URL = osc_base_url() . 'oc-content/plugins/' . osc_plugin_folder(__FILE__) . 'callback.php?extra=' . $extra;
         ?>
             <div style="font-size:16px;margin:10px;width:300px;cursor:pointer;margin-left:750px;margin-top:20px" class="blockchain-btn"
-            data-address="<?php echo osc_get_preference('blockchain_btc_address'); ?>"
+            data-address="<?php echo osc_get_preference('blockchain_btc_address', 'payment'); ?>"
             data-anonymous="false"
             data-callback="<?php echo $CALLBACK_URL; ?>">
                 <div class="blockchain stage-begin">

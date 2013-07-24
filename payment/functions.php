@@ -73,8 +73,12 @@
      * @param string $rpl custom variables
      * @param string $itemnumber (publish fee, premium, pack and which category)
      */
-    function wallet_button($amount = '0.00', $description = '', $product = '101', $extra = '||') {
-        echo '<a href="'.osc_route_url('payment-wallet', array('a' => $amount, 'desc' => $description, 'extra' => implode("|", $extra), 'product' => $product)).'"><button>'.__("Pay with your credit", "payment").'</button></a>';
+    function wallet_button($amount = '0.00', $description = '', $itemnumber = '101', $extra_array = '||') {
+        $extra = payment_prepare_custom($extra_array);
+        $extra .= 'concept,'.$description.'|';
+        $extra .= 'product,'.$itemnumber.'|';
+
+        echo '<a href="'.osc_route_url('payment-wallet', array('a' => $amount, 'desc' => $description, 'extra' => $extra)).'"><button>'.__("Pay with your credit", "payment").'</button></a>';
     }
 
     /**

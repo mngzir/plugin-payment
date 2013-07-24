@@ -17,7 +17,6 @@ CREATE TABLE  /*TABLE_PREFIX*/t_payments_log (
 
 CREATE TABLE /*TABLE_PREFIX*/t_payments_wallet (
     fk_i_user_id INT UNSIGNED NOT NULL,
-    f_amount FLOAT NOT NULL,
     i_amount BIGINT(20) NULL,
 
         PRIMARY KEY (fk_i_user_id),
