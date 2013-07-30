@@ -34,21 +34,17 @@ foreach($packs as $pack) { $pack_n++; ?>
     <div>
         <h3><?php echo sprintf(__('Credit pack #%d', 'payment'), $pack_n); ?></h3>
         <div><label><?php _e("Price", "payment");?>:</label> <?php echo $pack." ".osc_get_preference('currency', 'payment'); ?></div>
+        <ul class="payments-ul">
         <?php if(osc_get_preference('paypal_enabled', 'payment')==1) {?>
-            <div>
-                <?php Paypal::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
-            </div>
+            <?php Paypal::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
         <?php };
         if(osc_get_preference('blockchain_enabled', 'payment')==1) {?>
-            <div>
-                <?php Blockchain::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
-           </div>
+            <?php Blockchain::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
         <?php };
         if(osc_get_preference('braintree_enabled', 'payment')==1) { ?>
-            <div>
-                <?php BraintreePayment::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
-            </div>
+            <?php BraintreePayment::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
         <?php }; ?>
+        </ul>
     </div>
     <div style="clear:both;"></div>
     <br/>
@@ -57,4 +53,4 @@ foreach($packs as $pack) { $pack_n++; ?>
 <script type="text/javascript">
     var rd = document.getElementById("result_div");
 </script>
-<?php if(osc_get_preference('braintree_enable', 'payment')==1) { BraintreePayment::dialogJS(); }; ?>
+<?php if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  }; ?>

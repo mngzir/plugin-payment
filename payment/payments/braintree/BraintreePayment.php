@@ -37,7 +37,7 @@
             $r = rand(0,1000);
             $extra .= 'random,'.$r;
             $CALLBACK_URL = osc_base_url() . 'oc-content/plugins/' . osc_plugin_folder(__FILE__) . 'callback.php?extra=' . $extra;
-            echo '<a href="javascript:braintree_pay(\''.$amount.'\',\''.$description.'\',\''.$itemnumber.'\',\''.$extra.'\');" >'.__('Pay with credit card', 'payment').'</a>';
+            echo '<li class="payment braintree-btn"><a href="javascript:braintree_pay(\''.$amount.'\',\''.$description.'\',\''.$itemnumber.'\',\''.$extra.'\');" ><img src="'.osc_base_url() . 'oc-content/plugins/' . osc_plugin_folder(__FILE__).'pay_with_card.png" ></a></li>';
         }
                                             //style="display: none"
         public static function dialogJS() { ?>

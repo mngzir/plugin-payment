@@ -28,7 +28,7 @@ Short Name: payments
         require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/blockchain/Blockchain.php'; // Ready, but untested
     }
     if(osc_get_preference('braintree_enabled', 'payment')==1) {
-        require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/braintree/BraintreePayment.php'; // Ready, but untested
+        require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/braintree/BraintreePayment.php';
     }
 
     /**
@@ -57,8 +57,9 @@ Short Name: payments
     /**
      * Load payment's js library
      */
-    function payment_load_js() {
+    function payment_load_lib() {
         if(Params::getParam('page')=='custom') {
+            osc_enqueue_style('payment-plugin', osc_base_url().'oc-content/plugins/'.osc_plugin_folder(__FILE__).'style.css');
             if(osc_get_preference('paypal_enabled', 'payment')==1) {
                 osc_register_script('paypal', 'https://www.paypalobjects.com/js/external/dg.js', array('jquery'));
                 osc_enqueue_script('paypal');
@@ -66,9 +67,6 @@ Short Name: payments
             if(osc_get_preference('blockchain_enabled', 'payment')==1) {
                 osc_register_script('blockchain', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
                 osc_enqueue_script('blockchain');
-            }
-            if(osc_get_preference('braintree_enabled', 'payment')==1) {
-                //osc_register_script('braintree', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
             }
         }
     }
@@ -209,7 +207,7 @@ Short Name: payments
 
     osc_add_hook('admin_menu_init', 'payment_admin_menu');
 
-    osc_add_hook('init', 'payment_load_js');
+    osc_add_hook('init', 'payment_load_lib');
     osc_add_hook('posted_item', 'payment_publish', 10);
     osc_add_hook('user_menu', 'payment_user_menu');
     osc_add_hook('cron_hourly', 'payment_cron');

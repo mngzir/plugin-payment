@@ -12,14 +12,15 @@
 
                 <h1><?php _e('Continue the publish process', 'payment'); ?></h1>
                 <div>
-                    <div style="float:left; width: 50%;">
+                    <div class="payments-preview">
                         <label style="font-weight: bold;"><?php _e("Item's title", 'payment'); ?>:</label> <?php echo $item['s_title']; ?><br/>
                         <label style="font-weight: bold;"><?php _e("Item's description", 'payment'); ?>:</label> <?php echo $item['s_description']; ?><br/>
                     </div>
-                    <div style="float:left; width: 50%;">
+                    <div class="payments-options">
                         <?php _e("In order to make visible your ad to other users, it's required to pay a fee", 'payment'); ?>.<br/>
                         <?php echo sprintf(__('The current fee for this category is: %.2f %s', 'payment'), $category_fee, osc_get_preference('currency', 'payment')); ?><br/>
-                        <?php if(osc_is_web_user_logged_in()) {
+                        <ul class="payments-ul">
+                            <?php if(osc_is_web_user_logged_in()) {
                                 $wallet = ModelPayment::newInstance()->getWallet(osc_logged_user_id());
                                 if(isset($wallet['formatted_amount']) && $wallet['formatted_amount']>=$category_fee) {
                                     wallet_button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
@@ -46,12 +47,14 @@
                                 }
                             };
                         ?>
+                        </ul>
                     </div>
                     <div style="clear:both;"></div>
                     <div name="result_div" id="result_div"></div>
                     <script type="text/javascript">
                         var rd = document.getElementById("result_div");
                     </script>
+                    <?php if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  }; ?>
                 </div>
                 <?php
                 } else {

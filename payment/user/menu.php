@@ -1,9 +1,9 @@
 <?php
     $itemsPerPage = (Params::getParam('itemsPerPage') != '') ? Params::getParam('itemsPerPage') : 5;
     $page         = (Params::getParam('iPage') != '') ? Params::getParam('iPage') : 0;
-    $total_items  = Item::newInstance()->countByUserIDEnabled($_SESSION['userId']);
+    $total_items  = Item::newInstance()->countByUserID(osc_logged_user_id());
     $total_pages  = ceil($total_items/$itemsPerPage);
-    $items        = Item::newInstance()->findByUserIDEnabled($_SESSION['userId'], $page * $itemsPerPage, $itemsPerPage);
+    $items        = Item::newInstance()->findByUserID(osc_logged_user_id(), $page * $itemsPerPage, $itemsPerPage);
 
     View::newInstance()->_exportVariableToView('items', $items);
     View::newInstance()->_exportVariableToView('list_total_pages', $total_pages);

@@ -36,11 +36,15 @@
         */
         public static function button($amount = '0.00', $description = '', $itemnumber = '101', $extra_array = null) {
 
+            echo '<li class="payment paypal-btn">';
+
             if(osc_get_preference('paypal_standard', 'payment')==1) {
                 Paypal::standardButton($amount, $description, $itemnumber, $extra_array);
             } else {
                 Paypal::dgButton($amount, $description, $itemnumber, $extra_array);
             }
+
+            echo '</li>';
         }
 
         public static function dgButton($amount = '0.00', $description = '', $itemnumber = '101', $extra_array = null) {

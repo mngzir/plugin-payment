@@ -12,11 +12,11 @@
                 ?>
                 <h1><?php _e('Make the ad premium', 'payment'); ?></h1>
                 <div>
-                    <div style="float:left; width: 50%;">
+                    <div class="payments-preview">
                         <label style="font-weight: bold;"><?php _e("Item's title", 'payment'); ?>:</label> <?php echo $item['s_title']; ?><br/>
                         <label style="font-weight: bold;"><?php _e("Item's description", 'payment'); ?>:</label> <?php echo $item['s_description']; ?><br/>
                     </div>
-                    <div style="float:left; width: 50%;">
+                    <div class="payments-options">
                         <?php _e("In order to make premium your ad , it's required to pay a fee", 'payment'); ?>.<br/>
                         <?php echo sprintf(__("The current fee for this category is: %.2f %s", 'payment'), $category_fee, osc_get_preference('currency', 'payment')); ?><br/>
                         <?php if(osc_is_web_user_logged_in()) {
@@ -51,6 +51,7 @@
                     <script type="text/javascript">
                         var rd = document.getElementById("result_div");
                     </script>
+                    <?php if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  }; ?>
                 </div>
                 <?php
                 } else {
