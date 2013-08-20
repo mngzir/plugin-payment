@@ -86,7 +86,6 @@
                     $("#braintree-results").html('<?php _e('Processing the payment, please wait', 'payment');?>');
                     $("#braintree-results").show();
                     $.post(form.attr('action'), form.serialize(), function (data) {
-                        console.log(data);
                         $("#braintree-results").html(data);
                     });
                 };
@@ -129,12 +128,8 @@
 
             $data = payment_get_custom(Params::getParam('extra'));
 
-            $tmp = explode('x', $data['product']);
-            if(count($tmp)>1) {
-                $amount = $tmp[1];
-            } else {
-                return PAYMENT_FAILED;
-            }
+            $amount = payment_get_amount($data['product']);
+            if($amount<=0) { return PAYMENT_FAILED; }
 
             $result = Braintree_Transaction::sale(array(
                 'amount' => $amount,
@@ -148,8 +143,6 @@
                     'submitForSettlement' => true
                 )
             ));
-
-            print_r($result);
 
             if($result->success==1) {
                 Params::setParam('braintree_transaction_id', $result->transaction->id);

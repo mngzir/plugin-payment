@@ -44,6 +44,7 @@ foreach($packs as $pack) { $pack_n++; ?>
         if(osc_get_preference('braintree_enabled', 'payment')==1) { ?>
             <?php BraintreePayment::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
         <?php }; ?>
+            <?php StripePayment::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
         </ul>
     </div>
     <div style="clear:both;"></div>
@@ -53,4 +54,7 @@ foreach($packs as $pack) { $pack_n++; ?>
 <script type="text/javascript">
     var rd = document.getElementById("result_div");
 </script>
-<?php if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  }; ?>
+<?php
+if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  };
+StripePayment::dialogJS();
+?>

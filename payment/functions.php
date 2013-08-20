@@ -65,6 +65,20 @@
         return $tmp;
     }
 
+    function payment_get_amount($product) {
+        $tmp = explode("x", $product);
+        if(count($tmp)>1) {
+            if($tmp[0]=='101') {
+                return ModelPayment::newInstance()->getPublishPrice($tmp[1]);
+            } else if($tmp[0]=='201') {
+                return ModelPayment::newInstance()->getPremiumPrice($tmp[1]);
+            } else  if($tmp[0]=='301') {
+                return $tmp[1];
+            }
+        }
+        return 0;
+    }
+
     /**
      * Create and print a "Wallet" button
      *

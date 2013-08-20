@@ -3,7 +3,7 @@
 Plugin Name: Payment system
 Plugin URI: http://www.osclass.org/
 Description: Payment system
-Version: 2.0.0
+Version: 2.1.0
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: payments
@@ -30,6 +30,9 @@ Short Name: payments
     if(osc_get_preference('braintree_enabled', 'payment')==1) {
         require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/braintree/BraintreePayment.php';
     }
+
+    require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/stripe/StripePayment.php';
+
 
     /**
     * Create tables and variables on t_preference and t_pages
@@ -69,6 +72,8 @@ Short Name: payments
                 osc_enqueue_script('blockchain');
             }
         }
+        osc_register_script('stripe', 'https://checkout.stripe.com/v2/checkout.js', array('jquery'));
+        osc_enqueue_script('stripe');
     }
 
     /**
@@ -217,4 +222,5 @@ Short Name: payments
     osc_add_hook('delete_item', 'payment_item_delete');
 
     osc_add_hook('ajax_braintree', array('BraintreePayment', 'ajaxPayment'));
+    osc_add_hook('ajax_stripe', array('StripePayment', 'ajaxPayment'));
 ?>

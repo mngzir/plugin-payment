@@ -48,6 +48,13 @@
         osc_set_preference('braintree_sandbox', (Params::getParam("braintree_sandbox") == 'sandbox') ? 'sandbox' : 'production', 'payment', 'STRING');
         osc_set_preference('braintree_enabled', Params::getParam("braintree_enabled") ? Params::getParam("braintree_enabled") : '0', 'payment', 'BOOLEAN');
 
+        osc_set_preference('stripe_secret_key', payment_crypt(Params::getParam("stripe_secret_key")), 'payment', 'STRING');
+        osc_set_preference('stripe_public_key', payment_crypt(Params::getParam("stripe_public_key")), 'payment', 'STRING');
+        osc_set_preference('stripe_secret_key_test', payment_crypt(Params::getParam("stripe_secret_key_test")), 'payment', 'STRING');
+        osc_set_preference('stripe_public_key_test', payment_crypt(Params::getParam("stripe_public_key_test")), 'payment', 'STRING');
+        osc_set_preference('stripe_sandbox', Params::getParam("stripe_sandbox") ? Params::getParam("stripe_sandbox") : '0', 'payment', 'BOOLEAN');
+        osc_set_preference('stripe_enabled', Params::getParam("stripe_enabled") ? Params::getParam("stripe_enabled") : '0', 'payment', 'BOOLEAN');
+
         // HACK : This will make possible use of the flash messages ;)
         ob_get_clean();
         osc_add_flash_ok_message(__('Congratulations, the plugin is now configured', 'payment'), 'admin');
@@ -63,7 +70,7 @@
             width: '90%',
             title: '<?php echo osc_esc_js( __('Paypal help', 'payment') ); ?>'
         });
-        <?php /* $("#dialog-blockchain").dialog({
+        $("#dialog-blockchain").dialog({
             autoOpen: false,
             modal: true,
             width: '90%',
@@ -74,7 +81,13 @@
             modal: true,
             width: '90%',
             title: '<?php echo osc_esc_js( __('Braintree help', 'payment') ); ?>'
-        }); */ ?>
+        });
+        $("#dialog-stripe").dialog({
+            autoOpen: false,
+            modal: true,
+            width: '90%',
+            title: '<?php echo osc_esc_js( __('Stripe help', 'payment') ); ?>'
+        });
     });
 </script>
 <?php if(PAYMENT_CRYPT_KEY=='randompasswordchangethis') {
@@ -258,7 +271,7 @@
                         </div>
                     </div>
                     <div class="form-row braintree hide">
-                        <div class="form-label"><?php _e('Braintree mercahnt id', 'payment'); ?></div>
+                        <div class="form-label"><?php _e('Braintree merchant id', 'payment'); ?></div>
                         <div class="form-controls"><input type="text" class="xlarge" name="braintree_merchant_id" value="<?php echo payment_decrypt(osc_get_preference('braintree_merchant_id', 'payment')); ?>" /></div>
                     </div>
                     <div class="form-row braintree hide">
@@ -273,6 +286,45 @@
                         <div class="form-label"><?php _e('Braintree encryption key', 'payment'); ?></div>
                         <div class="form-controls"><input type="text" class="xlarge" name="braintree_encryption_key" value="<?php echo payment_decrypt(osc_get_preference('braintree_encryption_key',
                                 'payment')); ?>" /></div>
+                    </div>
+                    <h2 class="render-title separate-top"><?php _e('Stripe settings', 'payment'); ?> <span><a href="javascript:void(0);" onclick="$('#dialog-stripe').dialog('open');" ><?php _e('help', 'payment'); ?></a></span> <span style="font-size: 0.5em" ><a href="javascript:void(0);" onclick="$('.stripe').toggle();" ><?php _e('Show options', 'payment'); ?></a></span></h2>
+                    <div class="form-row stripe hide">
+                        <div class="form-label"><?php _e('Enable Stripe'); ?></div>
+                        <div class="form-controls">
+                            <div class="form-label-checkbox">
+                                <label>
+                                    <input type="checkbox" <?php echo (osc_get_preference('stripe_enabled', 'payment') ? 'checked="true"' : ''); ?> name="stripe_enabled" value="1" />
+                                    <?php _e('Enable Stripe as a method of payment', 'payment'); ?>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row stripe hide">
+                        <div class="form-label"><?php _e('Enable Sandbox'); ?></div>
+                        <div class="form-controls">
+                            <div class="form-label-checkbox">
+                                <label>
+                                    <input type="checkbox" <?php echo (osc_get_preference('stripe_sandbox', 'payment') ? 'checked="true"' : ''); ?> name="stripe_sandbox" value="1" />
+                                    <?php _e('Enable sandbox for development testing', 'payment'); ?>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row stripe hide">
+                        <div class="form-label"><?php _e('Stripe secret key', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="stripe_secret_key" value="<?php echo payment_decrypt(osc_get_preference('stripe_secret_key', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row stripe hide">
+                        <div class="form-label"><?php _e('Stripe public key', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="stripe_public_key" value="<?php echo payment_decrypt(osc_get_preference('stripe_public_key', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row stripe hide">
+                        <div class="form-label"><?php _e('Stripe secret key (test)', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="stripe_secret_key_test" value="<?php echo payment_decrypt(osc_get_preference('stripe_secret_key_test', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row stripe hide">
+                        <div class="form-label"><?php _e('Stripe public key (test)', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="stripe_public_key_test" value="<?php echo payment_decrypt(osc_get_preference('stripe_public_key_test', 'payment')); ?>" /></div>
                     </div>
                     <div class="clear"></div>
                     <div class="form-actions">
@@ -371,7 +423,7 @@
 <form id="dialog-braintree" method="get" action="#" class="has-form-actions hide">
     <div class="form-horizontal">
         <div class="form-row">
-            <h3><?php _e('Learn more about Bitcoins', 'payment'); ?></h3>
+            <h3><?php _e('Learn more about Braintree', 'payment'); ?></h3>
             <p>
                 <?php printf(__('Braintree official website: %s', 'payment'), '<a href="https://www.braintreepayments.com/">https://www.braintreepayments.com/</a>'); ?>.
                 <br/>
@@ -382,6 +434,24 @@
         <div class="form-actions">
             <div class="wrapper">
                 <a class="btn" href="javascript:void(0);" onclick="$('#dialog-braintree').dialog('close');"><?php _e('Cancel'); ?></a>
+            </div>
+        </div>
+    </div>
+</form>
+<form id="dialog-stripe" method="get" action="#" class="has-form-actions hide">
+    <div class="form-horizontal">
+        <div class="form-row">
+            <h3><?php _e('Learn more about Stripe', 'payment'); ?></h3>
+            <p>
+                <?php printf(__('Stripe official website: %s', 'payment'), '<a href="https://stripe.com/">https://stripe.com/</a>'); ?>.
+                <br/>
+                <?php printf(__('Getting started: %s', 'payment'), '<a href="https://stripe.com/docs">https://stripe.com/docs</a>'); ?>.
+                <br/>
+            </p>
+        </div>
+        <div class="form-actions">
+            <div class="wrapper">
+                <a class="btn" href="javascript:void(0);" onclick="$('#dialog-stripe').dialog('close');"><?php _e('Cancel'); ?></a>
             </div>
         </div>
     </div>

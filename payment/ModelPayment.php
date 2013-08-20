@@ -134,6 +134,13 @@
             osc_set_preference('braintree_sandbox', 'sandbox', 'payment', 'STRING');
             osc_set_preference('braintree_enabled', '0', 'payment', 'BOOLEAN');
 
+            osc_set_preference('stripe_secret_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('stripe_public_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('stripe_secret_key_test', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('stripe_public_key_test', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('stripe_sandbox', 'sandbox', 'payment', 'STRING');
+            osc_set_preference('stripe_enabled', '0', 'payment', 'BOOLEAN');
+
             $this->dao->select('pk_i_id') ;
             $this->dao->from(DB_TABLE_PREFIX.'t_item') ;
             $result = $this->dao->get();
@@ -199,12 +206,19 @@
             osc_delete_preference('blockchain_btc_address', 'payment');
             osc_delete_preference('blockchain_enabled', 'payment');
 
-            osc_delete_preference('braintree_merchant_id');
-            osc_delete_preference('braintree_public_key');
-            osc_delete_preference('braintree_private_key');
-            osc_delete_preference('braintree_encryption_key');
-            osc_delete_preference('braintree_sandbox');
-            osc_delete_preference('braintree_enabled');
+            osc_delete_preference('braintree_merchant_id', 'payment');
+            osc_delete_preference('braintree_public_key', 'payment');
+            osc_delete_preference('braintree_private_key', 'payment');
+            osc_delete_preference('braintree_encryption_key', 'payment');
+            osc_delete_preference('braintree_sandbox', 'payment');
+            osc_delete_preference('braintree_enabled', 'payment');
+
+            osc_delete_preference('stripe_secret_key', 'payment');
+            osc_delete_preference('stripe_public_key', 'payment');
+            osc_delete_preference('stripe_secret_key_test', 'payment');
+            osc_delete_preference('stripe_public_key_test', 'payment');
+            osc_delete_preference('stripe_sandbox', 'payment');
+            osc_delete_preference('stripe_enabled', 'payment');
         }
 
         public function versionUpdate() {
