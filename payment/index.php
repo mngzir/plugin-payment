@@ -31,7 +31,9 @@ Short Name: payments
         require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/braintree/BraintreePayment.php';
     }
 
-    require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/stripe/StripePayment.php';
+    if(osc_get_preference('stripe_enabled', 'payment')==1) {
+        require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/stripe/StripePayment.php';
+    }
 
 
     /**

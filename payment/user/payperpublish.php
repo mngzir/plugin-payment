@@ -34,6 +34,9 @@
                                     if(osc_get_preference('braintree_enabled', 'payment')) {
                                         BraintreePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
                                     };
+                                    if(osc_get_preference('stripe_enabled', 'payment')) {
+                                        StripePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
+                                    };
                                 }
                             } else {
                                 if(osc_get_preference('paypal_enabled', 'payment')) {
@@ -45,6 +48,9 @@
                                 if(osc_get_preference('braintree_enabled', 'payment')) {
                                     BraintreePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
                                 }
+                                if(osc_get_preference('stripe_enabled', 'payment')) {
+                                    StripePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
+                                }
                             };
                         ?>
                         </ul>
@@ -55,6 +61,7 @@
                         var rd = document.getElementById("result_div");
                     </script>
                     <?php if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  }; ?>
+                    <?php if(osc_get_preference('stripe_enabled', 'payment')==1) { StripePayment::dialogJS();  }; ?>
                 </div>
                 <?php
                 } else {
