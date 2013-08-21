@@ -29,10 +29,18 @@ Short Name: payments
     }
     if(osc_get_preference('braintree_enabled', 'payment')==1) {
         require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/braintree/BraintreePayment.php';
+        osc_add_hook('ajax_braintree', array('BraintreePayment', 'ajaxPayment'));
     }
-
     if(osc_get_preference('stripe_enabled', 'payment')==1) {
         require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/stripe/StripePayment.php';
+        osc_add_hook('ajax_stripe', array('StripePayment', 'ajaxPayment'));
+    }
+    if(osc_get_preference('coinjar_enabled', 'payment')==1) {
+        require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/coinjar/CoinjarPayment.php';
+        osc_add_route('coinjar-notify', 'payment/coinjar-notify', 'payment/coinjar-notify', osc_plugin_folder(__FILE__).'payments/coinjar/notify_url.php', true);
+        osc_add_route('coinjar-return', 'payment/coinjar-return', 'payment/coinjar-return', osc_plugin_folder(__FILE__).'payments/coinjar/return.php', true);
+        osc_add_route('coinjar-cancel', 'payment/coinjar-cancel', 'payment/coinjar-cancel', osc_plugin_folder(__FILE__).'payments/coinjar/cancel.php', true);
+        osc_add_hook('ajax_coinjar', array('CoinjarPayment', 'createOrder'));
     }
 
 
@@ -73,9 +81,11 @@ Short Name: payments
                 osc_register_script('blockchain', 'https://blockchain.info/Resources/wallet/pay-now-button.js', array('jquery'));
                 osc_enqueue_script('blockchain');
             }
+            if(osc_get_preference('stripe_enabled', 'payment')==1) {
+                osc_register_script('stripe', 'https://checkout.stripe.com/v2/checkout.js', array('jquery'));
+                osc_enqueue_script('stripe');
+            }
         }
-        osc_register_script('stripe', 'https://checkout.stripe.com/v2/checkout.js', array('jquery'));
-        osc_enqueue_script('stripe');
     }
 
     /**
@@ -84,46 +94,28 @@ Short Name: payments
      * @param integer $item
      */
     function payment_publish($item) {
-        if( // WE HAVE CORRECTLY SETUP PAYPAL
-            (osc_get_preference('paypal_enabled', 'payment')==1 &&
-                ((osc_get_preference('paypal_standard', 'payment')==1 && osc_get_preference('paypal_email', 'payment')!='') ||
-                (payment_decrypt(osc_get_preference('paypal_api_username', 'payment'))!='' &&
-                payment_decrypt(osc_get_preference('paypal_api_password', 'payment'))!='' &&
-                payment_decrypt(osc_get_preference('paypal_api_signature', 'payment'))!='' &&
-                osc_get_preference('paypal_standard', 'payment')==0)))
-            ||
-            // WE HAVE CORRECTLY SETUP BLOCKCHAIN
-            (osc_get_preference('blockchain_enabled', 'payment')==1 && osc_get_preference('blockchain_btc_address', 'payment')!='')
-            ||
-            // WE HAVE CORRECTLY SETUP BRAINTREE
-            (osc_get_preference('braintree_enabled', 'payment')==1 &&
-                osc_get_preference('braintree_merchant_id', 'payment')!='' &&
-                osc_get_preference('braintree_public_key', 'payment')!='' &&
-                osc_get_preference('braintree_private_key', 'payment')!='')
-            ) {
-            // Need to pay to publish ?
-            if(osc_get_preference('pay_per_post', 'payment')==1) {
-                $category_fee = ModelPayment::newInstance()->getPublishPrice($item['fk_i_category_id']);
-                payment_send_email($item, $category_fee);
-                if($category_fee>0) {
-                    // Catch and re-set FlashMessages
-                    osc_resend_flash_messages();
-                    $mItems = new ItemActions(false);
-                    $mItems->disable($item['pk_i_id']);
-                    ModelPayment::newInstance()->createItem($item['pk_i_id'],0);
-                    osc_redirect_to(osc_route_url('payment-publish', array('itemId' => $item['pk_i_id'])));
-                } else {
-                    // PRICE IS ZERO
-                    ModelPayment::newInstance()->createItem($item['pk_i_id'], 1);
-                }
+        // Need to pay to publish ?
+        if(osc_get_preference('pay_per_post', 'payment')==1) {
+            $category_fee = ModelPayment::newInstance()->getPublishPrice($item['fk_i_category_id']);
+            payment_send_email($item, $category_fee);
+            if($category_fee>0) {
+                // Catch and re-set FlashMessages
+                osc_resend_flash_messages();
+                $mItems = new ItemActions(false);
+                $mItems->disable($item['pk_i_id']);
+                ModelPayment::newInstance()->createItem($item['pk_i_id'],0);
+                osc_redirect_to(osc_route_url('payment-publish', array('itemId' => $item['pk_i_id'])));
             } else {
-                // NO NEED TO PAY PUBLISH FEE
-                payment_send_email($item, 0);
-                if(osc_get_preference('allow_premium', 'payment')==1) {
-                    $premium_fee = ModelPayment::newInstance()->getPremiumPrice($item['fk_i_category_id']);
-                    if($premium_fee>0) {
-                        osc_redirect_to(osc_route_url('payment-premium', array('itemId' => $item['pk_i_id'])));
-                    }
+                // PRICE IS ZERO
+                ModelPayment::newInstance()->createItem($item['pk_i_id'], 1);
+            }
+        } else {
+            // NO NEED TO PAY PUBLISH FEE
+            payment_send_email($item, 0);
+            if(osc_get_preference('allow_premium', 'payment')==1) {
+                $premium_fee = ModelPayment::newInstance()->getPremiumPrice($item['fk_i_category_id']);
+                if($premium_fee>0) {
+                    osc_redirect_to(osc_route_url('payment-premium', array('itemId' => $item['pk_i_id'])));
                 }
             }
         }
@@ -134,8 +126,10 @@ Short Name: payments
      */
     function payment_user_menu() {
         echo '<li class="opt_payment" ><a href="'.osc_route_url('payment-user-menu').'" >'.__("Listings payment status", "payment").'</a></li>' ;
-        if((osc_get_preference('pack_price_1', 'payment')!='' && osc_get_preference('pack_price_1', 'payment')!='0') || (osc_get_preference('pack_price_2', 'payment')!='' && osc_get_preference('pack_price_2', 'payment')!='0') || (osc_get_preference('pack_price_3', 'payment')!='' && osc_get_preference('pack_price_3', 'payment')!='0')) {
-            echo '<li class="opt_payment_pack" ><a href="'.osc_route_url('payment-user-pack').'" >'.__("Buy credit for payments", "payment").'</a></li>' ;
+        if((osc_get_preference('pack_price_1', 'payment')!='' && osc_get_preference('pack_price_1', 'payment')!='0')
+            || (osc_get_preference('pack_price_2', 'payment')!='' && osc_get_preference('pack_price_2', 'payment')!='0')
+            || (osc_get_preference('pack_price_3', 'payment')!='' && osc_get_preference('pack_price_3', 'payment')!='0')) {
+                echo '<li class="opt_payment_pack" ><a href="'.osc_route_url('payment-user-pack').'" >'.__("Buy credit for payments", "payment").'</a></li>' ;
         }
     }
 
@@ -204,6 +198,8 @@ Short Name: payments
     osc_add_route('payment-user-pack', 'payment/pack', 'payment/pack', osc_plugin_folder(__FILE__).'user/pack.php', true);
     osc_add_route('payment-wallet', 'payment/wallet/([^\/]+)/([^\/]+)/([^\/]+)/(.+)', 'payment/wallet/{a}/{extra}/{desc}/{product}', osc_plugin_folder(__FILE__).'/user/wallet.php', true);
 
+
+
     /**
      * ADD HOOKS
      */
@@ -223,6 +219,4 @@ Short Name: payments
     osc_add_hook('show_item', 'payment_show_item');
     osc_add_hook('delete_item', 'payment_item_delete');
 
-    osc_add_hook('ajax_braintree', array('BraintreePayment', 'ajaxPayment'));
-    osc_add_hook('ajax_stripe', array('StripePayment', 'ajaxPayment'));
 ?>

@@ -55,6 +55,13 @@
         osc_set_preference('stripe_sandbox', Params::getParam("stripe_sandbox") ? Params::getParam("stripe_sandbox") : '0', 'payment', 'BOOLEAN');
         osc_set_preference('stripe_enabled', Params::getParam("stripe_enabled") ? Params::getParam("stripe_enabled") : '0', 'payment', 'BOOLEAN');
 
+        osc_set_preference('coinjar_merchant_user', payment_crypt(Params::getParam("coinjar_merchant_user")), 'payment', 'STRING');
+        osc_set_preference('coinjar_merchant_password', payment_crypt(Params::getParam("coinjar_merchant_password")), 'payment', 'STRING');
+        osc_set_preference('coinjar_api_key', payment_crypt(Params::getParam("coinjar_api_key")), 'payment', 'STRING');
+        osc_set_preference('coinjar_merchant_reference', Params::getParam("coinjar_merchant_reference"), 'payment', 'STRING');
+        osc_set_preference('coinjar_sandbox', Params::getParam("coinjar_sandbox") ? Params::getParam("coinjar_sandbox") : '0', 'payment', 'BOOLEAN');
+        osc_set_preference('coinjar_enabled', Params::getParam("coinjar_enabled") ? Params::getParam("coinjar_enabled") : '0', 'payment', 'BOOLEAN');
+
         // HACK : This will make possible use of the flash messages ;)
         ob_get_clean();
         osc_add_flash_ok_message(__('Congratulations, the plugin is now configured', 'payment'), 'admin');
@@ -87,6 +94,12 @@
             modal: true,
             width: '90%',
             title: '<?php echo osc_esc_js( __('Stripe help', 'payment') ); ?>'
+        });
+        $("#dialog-coinjar").dialog({
+            autoOpen: false,
+            modal: true,
+            width: '90%',
+            title: '<?php echo osc_esc_js( __('CoinJar help', 'payment') ); ?>'
         });
     });
 </script>
@@ -326,6 +339,48 @@
                         <div class="form-label"><?php _e('Stripe public key (test)', 'payment'); ?></div>
                         <div class="form-controls"><input type="text" class="xlarge" name="stripe_public_key_test" value="<?php echo payment_decrypt(osc_get_preference('stripe_public_key_test', 'payment')); ?>" /></div>
                     </div>
+                    <h2 class="render-title separate-top"><?php _e('CoinJar settings', 'payment'); ?> <span><a href="javascript:void(0);" onclick="$('#dialog-coinjar').dialog('open');" ><?php _e('help', 'payment'); ?></a></span> <span style="font-size: 0.5em" ><a href="javascript:void(0);" onclick="$('.coinjar').toggle();" ><?php _e('Show options', 'payment'); ?></a></span></h2>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('Enable CoinJar'); ?></div>
+                        <div class="form-controls">
+                            <div class="form-label-checkbox">
+                                <label>
+                                    <input type="checkbox" <?php echo (osc_get_preference('coinjar_enabled', 'payment') ? 'checked="true"' : ''); ?> name="coinjar_enabled" value="1" />
+                                    <?php _e('Enable CoinJar as a method of payment', 'payment'); ?>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('Enable Sandbox'); ?></div>
+                        <div class="form-controls">
+                            <div class="form-label-checkbox">
+                                <label>
+                                    <input type="checkbox" <?php echo (osc_get_preference('coinjar_sandbox', 'payment') ? 'checked="true"' : ''); ?> name="coinjar_sandbox" value="1" />
+                                    <?php _e('Enable sandbox for development testing', 'payment'); ?>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar merchant user', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="coinjar_merchant_user" value="<?php echo payment_decrypt(osc_get_preference('coinjar_merchant_user', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar merchant password', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="coinjar_merchant_password" value="<?php echo payment_decrypt(osc_get_preference('coinjar_merchant_password', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar API key', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="coinjar_api_key" value="<?php echo payment_decrypt(osc_get_preference('coinjar_api_key', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar merchant reference', 'payment'); ?></div>
+                        <div class="form-controls">
+                            <input type="text" class="xlarge" name="coinjar_merchant_reference" value="<?php echo osc_get_preference('coinjar_merchant_reference', 'payment'); ?>" />
+                            <span class="help-box"><?php _e('It you have several websites this field helps you identify from which one is the payment', 'payment'); ?></span>
+                        </div>
+                    </div>
                     <div class="clear"></div>
                     <div class="form-actions">
                         <input type="submit" id="save_changes" value="<?php echo osc_esc_html( __('Save changes') ); ?>" class="btn btn-submit" />
@@ -452,6 +507,24 @@
         <div class="form-actions">
             <div class="wrapper">
                 <a class="btn" href="javascript:void(0);" onclick="$('#dialog-stripe').dialog('close');"><?php _e('Cancel'); ?></a>
+            </div>
+        </div>
+    </div>
+</form>
+<form id="dialog-coinjar" method="get" action="#" class="has-form-actions hide">
+    <div class="form-horizontal">
+        <div class="form-row">
+            <h3><?php _e('Learn more about CoinJar', 'payment'); ?></h3>
+            <p>
+                <?php printf(__('CoinJar official website: %s', 'payment'), '<a href="http://coinjar.io/">http://coinjar.io/</a>'); ?>.
+                <br/>
+                <?php printf(__('Getting started: %s', 'payment'), '<a href="https://developer.coinjar.io/display/CD/Home">https://developer.coinjar.io/display/CD/Home</a>'); ?>.
+                <br/>
+            </p>
+        </div>
+        <div class="form-actions">
+            <div class="wrapper">
+                <a class="btn" href="javascript:void(0);" onclick="$('#dialog-coinjar').dialog('close');"><?php _e('Cancel'); ?></a>
             </div>
         </div>
     </div>

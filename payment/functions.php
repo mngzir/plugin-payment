@@ -106,6 +106,37 @@
         </script>
     <?php }
 
+    function payment_buttons($amount = '0.00', $description = '', $itemnumber = '101', $extra_array = null) {
+        if(osc_get_preference('paypal_enabled', 'payment')==1) {
+            Paypal::button($amount, $description, $itemnumber, $extra_array);
+        };
+        if(osc_get_preference('blockchain_enabled', 'payment')==1) {
+            Blockchain::button($amount, $description, $itemnumber, $extra_array);
+        };
+        if(osc_get_preference('braintree_enabled', 'payment')==1) {
+            BraintreePayment::button($amount, $description, $itemnumber, $extra_array);
+        };
+        if(osc_get_preference('stripe_enabled', 'payment')==1) {
+            StripePayment::button($amount, $description, $itemnumber, $extra_array);
+        };
+        if(osc_get_preference('coinjar_enabled', 'payment')==1) {
+            CoinjarPayment::button($amount, $description, $itemnumber, $extra_array);
+        }
+    }
+
+    function payment_buttons_js() {
+        if(osc_get_preference('paypal_enabled', 'payment')==1) { ?>
+        <div name="result_div" id="result_div"></div>
+        <script type="text/javascript">
+            var rd = document.getElementById("result_div");
+        </script>
+        <?php };
+        if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  };
+        if(osc_get_preference('stripe_enabled', 'payment')==1) { StripePayment::dialogJS();  };
+        if(osc_get_preference('coinjar_enabled', 'payment')==1) { CoinjarPayment::dialogJS(); };
+    }
+
+
     /**
      * Send email to un-registered users with payment options
      *

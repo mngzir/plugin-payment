@@ -31,10 +31,6 @@ class StripePayment
         $r = rand(0,1000);
         $extra .= 'random,'.$r;
         echo '<li class="payment stripe-btn"><a href="javascript:stripe_pay(\''.$amount.'\',\''.$description.'\',\''.$itemnumber.'\',\''.$extra.'\');" ><img src="'.osc_base_url() . 'oc-content/plugins/' . osc_plugin_folder(__FILE__).'pay_with_card.png" ></a></li>';
-        ?>
-
-
-    <?php
     }
 
     public static function dialogJS() { ?>

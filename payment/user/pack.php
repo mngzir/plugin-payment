@@ -35,28 +35,10 @@ foreach($packs as $pack) { $pack_n++; ?>
         <h3><?php echo sprintf(__('Credit pack #%d', 'payment'), $pack_n); ?></h3>
         <div><label><?php _e("Price", "payment");?>:</label> <?php echo $pack." ".osc_get_preference('currency', 'payment'); ?></div>
         <ul class="payments-ul">
-        <?php if(osc_get_preference('paypal_enabled', 'payment')==1) {
-            Paypal::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email']));
-        };
-        if(osc_get_preference('blockchain_enabled', 'payment')==1) {
-            Blockchain::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email']));
-        };
-        if(osc_get_preference('braintree_enabled', 'payment')==1) {
-            BraintreePayment::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email']));
-        };
-        if(osc_get_preference('braintree_enabled', 'payment')==1) {
-            StripePayment::button($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email']));
-        }; ?>
+        <?php payment_buttons($pack, sprintf(__("Credit for %s %s at %s", "payment"), $pack, osc_get_preference("currency", "payment"), osc_page_title()), '301x'.$pack, array('user' => @$user['pk_i_id'], 'itemid' => @$user['pk_i_id'], 'email' => @$user['s_email'])); ?>
         </ul>
     </div>
     <div style="clear:both;"></div>
     <br/>
 <?php } ?>
-<div name="result_div" id="result_div"></div>
-<script type="text/javascript">
-    var rd = document.getElementById("result_div");
-</script>
-<?php
-if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  };
-StripePayment::dialogJS();
-?>
+<?php payment_buttons_js(); ?>

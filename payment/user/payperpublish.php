@@ -25,43 +25,16 @@
                                 if(isset($wallet['formatted_amount']) && $wallet['formatted_amount']>=$category_fee) {
                                     wallet_button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
                                 } else {
-                                    if(osc_get_preference('paypal_enabled', 'payment')) {
-                                        Paypal::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                    };
-                                    if(osc_get_preference('blockchain_enabled', 'payment')) {
-                                        Blockchain::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                    };
-                                    if(osc_get_preference('braintree_enabled', 'payment')) {
-                                        BraintreePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                    };
-                                    if(osc_get_preference('stripe_enabled', 'payment')) {
-                                        StripePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                    };
+                                    payment_buttons($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
                                 }
                             } else {
-                                if(osc_get_preference('paypal_enabled', 'payment')) {
-                                    Paypal::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                }
-                                if(osc_get_preference('blockchain_enabled', 'payment')) {
-                                    Blockchain::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                }
-                                if(osc_get_preference('braintree_enabled', 'payment')) {
-                                    BraintreePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                }
-                                if(osc_get_preference('stripe_enabled', 'payment')) {
-                                    StripePayment::button($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
-                                }
+                                    payment_buttons($category_fee, sprintf(__('Publish fee for item %d at %s', 'payment'), $item['pk_i_id'], osc_page_title()), "101x".$item['fk_i_category_id']."x".$item['pk_i_id'], array('user' => $item['fk_i_user_id'], 'itemid' => $item['pk_i_id'], 'email' => $item['s_contact_email']));
                             };
                         ?>
                         </ul>
                     </div>
                     <div style="clear:both;"></div>
-                    <div name="result_div" id="result_div"></div>
-                    <script type="text/javascript">
-                        var rd = document.getElementById("result_div");
-                    </script>
-                    <?php if(osc_get_preference('braintree_enabled', 'payment')==1) { BraintreePayment::dialogJS();  }; ?>
-                    <?php if(osc_get_preference('stripe_enabled', 'payment')==1) { StripePayment::dialogJS();  }; ?>
+                    <?php payment_buttons_js(); ?>
                 </div>
                 <?php
                 } else {

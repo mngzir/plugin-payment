@@ -141,6 +141,13 @@
             osc_set_preference('stripe_sandbox', 'sandbox', 'payment', 'STRING');
             osc_set_preference('stripe_enabled', '0', 'payment', 'BOOLEAN');
 
+            osc_set_preference('coinjar_merchant_user', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('coinjar_merchant_password', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('coinjar_api_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('coinjar_merchant_reference', osc_sanitizeString(osc_page_title()), 'payment', 'STRING');
+            osc_set_preference('coinjar_sandbox', 'sandbox', 'payment', 'STRING');
+            osc_set_preference('coinjar_enabled', '0', 'payment', 'BOOLEAN');
+
             $this->dao->select('pk_i_id') ;
             $this->dao->from(DB_TABLE_PREFIX.'t_item') ;
             $result = $this->dao->get();
