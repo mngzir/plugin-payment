@@ -1,7 +1,7 @@
 <?php
 class CoinJar {
 
-    private $_apiEndpoint = 'https://api.coinjar.io/v1/';
+    private $_apiEndpoint;
     private $_checkoutEndpoint;
     private $_apiKey;
     private $_checkoutUser;
@@ -9,8 +9,10 @@ class CoinJar {
 
     public function __construct($user = '', $password = '', $apikey = '', $sandbox = false) {
         if($sandbox) {
+            $this->_apiEndpoint = 'https://secure.sandbox.coinjar.io/api/v1/';
             $this->_checkoutEndpoint = 'https://checkout.sandbox.coinjar.io/api/v1/';
         } else {
+            $this->_apiEndpoint = 'https://api.coinjar.io/v1/';
             $this->_checkoutEndpoint = 'https://checkout.coinjar.io/api/v1/';
         }
         $this->_apiKey = $apikey;

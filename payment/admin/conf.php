@@ -58,6 +58,9 @@
         osc_set_preference('coinjar_merchant_user', payment_crypt(Params::getParam("coinjar_merchant_user")), 'payment', 'STRING');
         osc_set_preference('coinjar_merchant_password', payment_crypt(Params::getParam("coinjar_merchant_password")), 'payment', 'STRING');
         osc_set_preference('coinjar_api_key', payment_crypt(Params::getParam("coinjar_api_key")), 'payment', 'STRING');
+        osc_set_preference('coinjar_sb_merchant_user', payment_crypt(Params::getParam("coinjar_sb_merchant_user")), 'payment', 'STRING');
+        osc_set_preference('coinjar_sb_merchant_password', payment_crypt(Params::getParam("coinjar_sb_merchant_password")), 'payment', 'STRING');
+        osc_set_preference('coinjar_sb_api_key', payment_crypt(Params::getParam("coinjar_sb_api_key")), 'payment', 'STRING');
         osc_set_preference('coinjar_merchant_reference', Params::getParam("coinjar_merchant_reference"), 'payment', 'STRING');
         osc_set_preference('coinjar_sandbox', Params::getParam("coinjar_sandbox") ? Params::getParam("coinjar_sandbox") : '0', 'payment', 'BOOLEAN');
         osc_set_preference('coinjar_enabled', Params::getParam("coinjar_enabled") ? Params::getParam("coinjar_enabled") : '0', 'payment', 'BOOLEAN');
@@ -373,6 +376,18 @@
                     <div class="form-row coinjar hide">
                         <div class="form-label"><?php _e('CoinJar API key', 'payment'); ?></div>
                         <div class="form-controls"><input type="text" class="xlarge" name="coinjar_api_key" value="<?php echo payment_decrypt(osc_get_preference('coinjar_api_key', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar merchant user (sandbox)', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="coinjar_sb_merchant_user" value="<?php echo payment_decrypt(osc_get_preference('coinjar_sb_merchant_user', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar merchant password (sandbox)', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="coinjar_sb_merchant_password" value="<?php echo payment_decrypt(osc_get_preference('coinjar_sb_merchant_password', 'payment')); ?>" /></div>
+                    </div>
+                    <div class="form-row coinjar hide">
+                        <div class="form-label"><?php _e('CoinJar API key (sandbox)', 'payment'); ?></div>
+                        <div class="form-controls"><input type="text" class="xlarge" name="coinjar_sb_api_key" value="<?php echo payment_decrypt(osc_get_preference('coinjar_sb_api_key', 'payment')); ?>" /></div>
                     </div>
                     <div class="form-row coinjar hide">
                         <div class="form-label"><?php _e('CoinJar merchant reference', 'payment'); ?></div>

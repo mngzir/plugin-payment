@@ -60,12 +60,20 @@
         }
 
         public static function createOrder() {
-            $coinjar = new CoinJar(
-                payment_decrypt(osc_get_preference('coinjar_merchant_user', 'payment')),
-                payment_decrypt(osc_get_preference('coinjar_merchar_password', 'payment')),
-                payment_decrypt(osc_get_preference('coinjar_api_key', 'payment')),
-                (osc_get_preference('coinjar_sandbox')==1)
-            );
+            if(osc_get_preference('coinjar_sandbox')!=1) {
+                $coinjar = new CoinJar(
+                    payment_decrypt(osc_get_preference('coinjar_merchant_user', 'payment')),
+                    payment_decrypt(osc_get_preference('coinjar_merchar_password', 'payment')),
+                    payment_decrypt(osc_get_preference('coinjar_api_key', 'payment'))
+                );
+            } else {
+                $coinjar = new CoinJar(
+                    payment_decrypt(osc_get_preference('coinjar_sb_merchant_user', 'payment')),
+                    payment_decrypt(osc_get_preference('coinjar_sb_merchar_password', 'payment')),
+                    payment_decrypt(osc_get_preference('coinjar_sb_api_key', 'payment')),
+                    true
+                );
+            }
             $items[0]['name'] = Params::getParam('description');
             $items[0]['quantity'] = 1;
             $items[0]['amount'] = payment_get_amount(Params::getParam('itemnumber'));

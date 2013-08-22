@@ -144,6 +144,9 @@
             osc_set_preference('coinjar_merchant_user', payment_crypt(''), 'payment', 'STRING');
             osc_set_preference('coinjar_merchant_password', payment_crypt(''), 'payment', 'STRING');
             osc_set_preference('coinjar_api_key', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('coinjar_sb_merchant_user', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('coinjar_sb_merchant_password', payment_crypt(''), 'payment', 'STRING');
+            osc_set_preference('coinjar_sb_api_key', payment_crypt(''), 'payment', 'STRING');
             osc_set_preference('coinjar_merchant_reference', osc_sanitizeString(osc_page_title()), 'payment', 'STRING');
             osc_set_preference('coinjar_sandbox', 'sandbox', 'payment', 'STRING');
             osc_set_preference('coinjar_enabled', '0', 'payment', 'BOOLEAN');
