@@ -155,7 +155,7 @@
                         <div class="form-controls"><input type="text" class="xlarge" name="default_publish_cost" value="<?php echo osc_get_preference('default_publish_cost', 'payment'); ?>" /></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-label"><?php _e('Default language'); ?></div>
+                        <div class="form-label"><?php _e('Default currency'); ?></div>
                         <div class="form-controls">
                             <select name="currency" id="currency">
                                 <option value="AUD" <?php if(osc_get_preference('currency', 'payment')=="AUD") { echo 'selected="selected"';}; ?> >AUD</option>
