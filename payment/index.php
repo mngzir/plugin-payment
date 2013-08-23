@@ -37,9 +37,9 @@ Short Name: payments
     }
     if(osc_get_preference('coinjar_enabled', 'payment')==1) {
         require_once osc_plugins_path() . osc_plugin_folder(__FILE__) . 'payments/coinjar/CoinjarPayment.php';
-        osc_add_route('coinjar-notify', 'payment/coinjar-notify', 'payment/coinjar-notify', osc_plugin_folder(__FILE__).'payments/coinjar/notify_url.php', true);
-        osc_add_route('coinjar-return', 'payment/coinjar-return', 'payment/coinjar-return', osc_plugin_folder(__FILE__).'payments/coinjar/return.php', true);
-        osc_add_route('coinjar-cancel', 'payment/coinjar-cancel', 'payment/coinjar-cancel', osc_plugin_folder(__FILE__).'payments/coinjar/cancel.php', true);
+        osc_add_route('coinjar-notify', 'payment/coinjar-notify/(.+)', 'payment/coinjar-notify/{extra}', osc_plugin_folder(__FILE__).'payments/coinjar/notify_url.php', true);
+        osc_add_route('coinjar-return', 'payment/coinjar-return/(.+)', 'payment/coinjar-return/{extra}', osc_plugin_folder(__FILE__).'payments/coinjar/return.php', true);
+        osc_add_route('coinjar-cancel', 'payment/coinjar-cancel/(.+)', 'payment/coinjar-cancel/{extra}', osc_plugin_folder(__FILE__).'payments/coinjar/cancel.php', true);
         osc_add_hook('ajax_coinjar', array('CoinjarPayment', 'createOrder'));
     }
 

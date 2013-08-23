@@ -5,19 +5,22 @@ class CoinJar {
     private $_checkoutEndpoint;
     private $_apiKey;
     private $_checkoutUser;
-    private $_checkoutPassword;
+    private $_checkoutSecret;
+    private $_orderURL;
 
-    public function __construct($user = '', $password = '', $apikey = '', $sandbox = false) {
+    public function __construct($user = '', $secret = '', $apikey = '', $sandbox = false) {
         if($sandbox) {
             $this->_apiEndpoint = 'https://secure.sandbox.coinjar.io/api/v1/';
             $this->_checkoutEndpoint = 'https://checkout.sandbox.coinjar.io/api/v1/';
+            $this->_orderURL = 'https://checkout.sandbox.coinjar.io/orders/';
         } else {
             $this->_apiEndpoint = 'https://api.coinjar.io/v1/';
             $this->_checkoutEndpoint = 'https://checkout.coinjar.io/api/v1/';
+            $this->_orderURL = 'https://checkout.coinjar.io/orders/';
         }
         $this->_apiKey = $apikey;
         $this->_checkoutUser = $user;
-        $this->_checkoutPassword = $password;
+        $this->_checkoutSecret = $secret;
     }
 
     /**
@@ -204,7 +207,7 @@ class CoinJar {
      * @return string
      */
     public function orderPage($uuid) {
-        return 'https://checkout.coinjar.io/orders/'.$uuid;
+        return $this->_orderURL.$uuid;
     }
 
     /**
@@ -224,6 +227,8 @@ class CoinJar {
      * @return mixed (json)
      */
     public function createOrder($items, $currency, $merchant_invoice, $merchant_reference, $notify_url, $return_url, $cancel_url) {
+        $currency = strtoupper($currency);
+        if(!in_array($currency, array('BTC', 'USD', 'AUD', 'NZD', 'CAD', 'EUR', 'GBP', 'SGD', 'HKD', 'CHF', 'JPY'))) { return false; }
         $params = array(
             'order[currency]' => $currency,
             'order[merchant_invoice]' => $merchant_invoice,
@@ -240,6 +245,68 @@ class CoinJar {
             $k++;
         }
         return $this->_doCheckoutRequest('orders', $params, 'post');
+    }
+
+    /**
+     * Simulate a IPN to the $notify_url
+     *
+     * @param string $notify_url URL to notify
+     * @param string $uuid The CoinJar Checkout ID
+     * @param float $amount The total Order amount
+     * @param float $fee The transaction fee for the Order
+     * @param string $currency The 3 letter currency code the order is in, as specified in the request
+     * @param float $bitcoin_amount The bitcoin amount of the Order
+     * @param string $bitcoin_address The bitcoin address of the Order
+     * @param string $merchant_reference The Merchant Reference, as specified in the request
+     * @param string $merchant_invoice The Merchant Invoice, as specified in the request
+     * @param string $ipn_digest Used to verify the IPN request is from CoinJar. This is an HMAC encoded string using SHA256 as the algorithm, your Merchant Secret as the key, and the following fields ($uiid.$amount.$currency.$status) concatenated as the message. If left blank, it will be calculated with the order data
+     * @param string $status The status of the transaction, should only ever be COMPLETED
+     *
+     * @return string response of the request
+     */
+    public function simulateIPN($notify_url, $uuid, $amount, $fee, $currency, $bitcoin_amount, $bitcoin_address, $merchant_reference, $merchant_invoice, $ipn_digest = null, $status = 'COMPLETED') {
+        if($ipn_digest==null) {
+            $ipn_digest = $this->IPNDigest($uuid, $amount, $currency, $status);
+        }
+        $request = ''.
+            '&uuid='.$uuid.
+            '&amount='.$amount.
+            '&fee='.$fee.
+            '&currency='.strtoupper($currency).
+            '&bitcoin_amount='.$bitcoin_amount.
+            '&bitcoin_address='.$bitcoin_address.
+            '&merchant_reference='.$merchant_reference.
+            '&merchant_invoice='.$merchant_invoice.
+            '&ipn_digest='.$ipn_digest.
+            '&status='.strtoupper($status);
+        $curl = curl_init($notify_url);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $request);
+        curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        //curl_setopt($curl, CURLOPT_VERBOSE, true);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+        return $response;
+    }
+
+    /**
+     * Create the digest in the format of CoinJar
+     * Concatenate $uiid.$amount.$currency.$status , and hmac it with the merchant's secret as key
+     *
+     * @param string $uuid
+     * @param float $amount
+     * @param string $currency
+     * @param string $status
+     * @return string IPN digest
+     */
+    public function IPNDigest($uuid, $amount, $currency, $status) {
+        return hash_hmac('sha256', $uuid.$amount.strtoupper($currency.$status), $this->_checkoutSecret);
     }
 
     /**
@@ -263,7 +330,7 @@ class CoinJar {
      * @return mixed (json)
      */
     private function _doCheckoutRequest($action, $params = null, $method = "get") {
-        return $this->_doRequest($this->_checkoutEndpoint, $action, $this->_checkoutUser.":".$this->_checkoutPassword, $params, $method);
+        return $this->_doRequest($this->_checkoutEndpoint, $action, $this->_checkoutUser.":".$this->_checkoutSecret, $params, $method);
     }
 
     /**
@@ -271,12 +338,12 @@ class CoinJar {
      *
      * @param $endpoint
      * @param $action
-     * @param $user API key or Checkout's user & password in format [user]:[password]
+     * @param $user API key or Checkout's user & secret in format [user]:[secret]
      * @param null $params
      * @param string $method
      * @return mixed (json)
      */
-    private function _doRequest($endpoint, $action, $user, $params = null, $method = "get") {
+    private function _doRequest($endpoint, $action, $user = '', $params = null, $method = "get") {
         $request = '';
         if($params!=null && is_array($params)) {
             foreach($params as $key => $value) {
@@ -306,6 +373,7 @@ class CoinJar {
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_TIMEOUT, 30);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        //curl_setopt($curl, CURLOPT_VERBOSE, true);
 
         $response = curl_exec($curl);
         curl_close($curl);
