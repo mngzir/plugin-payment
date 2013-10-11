@@ -172,12 +172,16 @@
         }
 
         public function premiumOff($id) {
-            $this->dao->delete($this->getTable_premium(), array('fk_i_item_id' => $id));
+            return $this->dao->delete($this->getTable_premium(), array('fk_i_item_id' => $id));
         }
 
         public function deleteItem($id) {
             $this->premiumOff($id);
-            $this->dao->delete($this->getTable_publish(), array('fk_i_item_id' => $id));
+            return $this->dao->delete($this->getTable_publish(), array('fk_i_item_id' => $id));
+        }
+
+        public function deletePrices($id) {
+            return $this->dao->delete($this->getTable_prices(), array('fk_i_category_id' => $id));
         }
 
         /**
@@ -442,7 +446,7 @@
         }
 
         public function insertPrice($category, $publish_fee, $premium_fee) {
-            $this->dao->replace($this->getTable_prices(), array('fk_i_category_id' => $category, 'f_publish_cost' => $publish_fee, 'f_premium_cost' => $premium_fee));
+            return $this->dao->replace($this->getTable_prices(), array('fk_i_category_id' => $category, 'f_publish_cost' => $publish_fee, 'f_premium_cost' => $premium_fee));
         }
 
         public function payPublishFee($itemId, $paymentId) {
@@ -453,7 +457,7 @@
                 $this->dao->update($this->getTable_publish(), array('b_paid' => 1, 'dt_date' => date("Y-m-d H:i:s"), 'fk_i_payment_id' => $paymentId), array('fk_i_item_id' => $itemId));
             }
             $mItems = new ItemActions(false);
-            $mItems->enable($itemId);
+            return $mItems->enable($itemId);
         }
 
         public function payPremiumFee($itemId, $paymentId) {
@@ -464,16 +468,16 @@
                 $this->dao->update($this->getTable_premium(), array('dt_date' => date("Y-m-d H:i:s"), 'fk_i_payment_id' => $paymentId), array('fk_i_item_id' => $itemId));
             }
             $mItem = new ItemActions(false);
-            $mItem->premium($itemId, true);
+            return $mItem->premium($itemId, true);
         }
 
         public function addWallet($user, $amount) {
             $amount = (int)($amount*1000000000000);
             $wallet = $this->getWallet($user);
             if(isset($wallet['i_amount'])) {
-                $this->dao->update($this->getTable_wallet(), array('i_amount' => $amount+$wallet['i_amount']), array('fk_i_user_id' => $user));
+                return $this->dao->update($this->getTable_wallet(), array('i_amount' => $amount+$wallet['i_amount']), array('fk_i_user_id' => $user));
             } else {
-                $this->dao->insert($this->getTable_wallet(), array('fk_i_user_id' => $user, 'i_amount' => $amount));
+                return $this->dao->insert($this->getTable_wallet(), array('fk_i_user_id' => $user, 'i_amount' => $amount));
             }
 
         }

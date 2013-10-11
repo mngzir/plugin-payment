@@ -3,7 +3,7 @@
 Plugin Name: Payment system
 Plugin URI: http://www.osclass.org/
 Description: Payment system
-Version: 2.2.0
+Version: 3.0.0
 Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: payments
