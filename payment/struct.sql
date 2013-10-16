@@ -15,9 +15,27 @@ CREATE TABLE  /*TABLE_PREFIX*/t_payments_log (
     PRIMARY KEY(pk_i_id)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET 'UTF8' COLLATE 'UTF8_GENERAL_CI';
 
-CREATE TABLE /*TABLE_PREFIX*/t_payments_wallet (
+CREATE TABLE  /*TABLE_PREFIX*/t_payments_packs (
+    pk_i_id INT NOT NULL AUTO_INCREMENT ,
+    b_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    b_premium BOOLEAN NOT NULL DEFAULT TRUE,
+    s_name VARCHAR( 200 ) NOT NULL ,
+    s_title VARCHAR( 200 ) NOT NULL ,
+    i_days INT(10) NULL,
+    i_pictures INT(10) NULL,
+    i_ads INT(10) NULL,
+    i_expiration INT(10) NULL,
+    dt_expiration DATETIME NOT NULL ,
+    i_price BIGINT(20) NULL,
+
+    PRIMARY KEY(pk_i_id)
+) ENGINE=InnoDB DEFAULT CHARACTER SET 'UTF8' COLLATE 'UTF8_GENERAL_CI';
+
+CREATE TABLE /*TABLE_PREFIX*/t_payments_user (
     fk_i_user_id INT UNSIGNED NOT NULL,
+    fk_i_pack_id INT UNSIGNED NULL,
     i_amount BIGINT(20) NULL,
+    i_ads BIGINT(20) NULL,
 
         PRIMARY KEY (fk_i_user_id),
         FOREIGN KEY (fk_i_user_id) REFERENCES /*TABLE_PREFIX*/t_user (pk_i_id)

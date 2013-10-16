@@ -1,5 +1,25 @@
 <?php
 /*
+ *      OSCLass – software for creating and publishing online classified
+ *                           advertising platforms
+ *
+ *                        Copyright (C) 2013 OSCLASS
+ *
+ *       This program is free software: you can redistribute it and/or
+ *     modify it under the terms of the GNU Affero General Public License
+ *     as published by the Free Software Foundation, either version 3 of
+ *            the License, or (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful, but
+ *         WITHOUT ANY WARRANTY; without even the implied warranty of
+ *        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *             GNU Affero General Public License for more details.
+ *
+ *      You should have received a copy of the GNU Affero General Public
+ * License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
 Plugin Name: Payment system
 Plugin URI: http://www.osclass.org/
 Description: Payment system
@@ -8,6 +28,7 @@ Author: OSClass
 Author URI: http://www.osclass.org/
 Short Name: payments
 */
+
 
     define('PAYMENT_CRYPT_KEY', 'randompasswordchangethis');
     // PAYMENT STATUS
@@ -64,7 +85,8 @@ Short Name: payments
     function payment_admin_menu() {
         osc_add_admin_submenu_divider('plugins', 'Payment plugin', 'payment_divider', 'administrator');
         osc_add_admin_submenu_page('plugins', __('Payment options', 'payment'), osc_route_admin_url('payment-admin-conf'), 'payment_settings', 'administrator');
-        osc_add_admin_submenu_page('plugins', __('Categories fees', 'payment'), osc_route_admin_url('payment-admin-prices'), 'payment_help', 'administrator');
+        osc_add_admin_submenu_page('plugins', __('Categories fees', 'payment'), osc_route_admin_url('payment-admin-prices'), 'payment_prices', 'administrator');
+        osc_add_admin_submenu_page('plugins', __('Configure packs', 'payment'), osc_route_admin_url('payment-admin-packs'), 'payment_packs', 'administrator');
     }
 
     /**
@@ -186,12 +208,67 @@ Short Name: payments
         ModelPayment::newInstance()->versionUpdate();
     }
 
+    function payment_user_table($table) {
+        $table->removeColumn("date");
+        $table->removeColumn("update_date");
+        $table->addColumn("payment_pack", __("Payment pack", "payment"));
+        $table->addColumn('date', __('Date'));
+        $table->addColumn('update_date', __('Update date'));
+    }
+
+    function payment_user_row($row, $aRow) {
+        $wallet = ModelPayment::newInstance()->getUser($aRow['pk_i_id']);
+        if(!isset($wallet['fk_i_pack_id']) || $wallet['fk_i_pack_id']==null || $wallet['fk_i_pack_id']==0) {
+            $row['payment_pack'] = __('No payment pack', 'payment');
+        } else {
+            $pack = ModelPayment::newInstance()->getPack($wallet['fk_i_pack_id']);
+            if(!isset($pack['pk_i_id'])) {
+                $row['payment_pack'] = __('No payment pack', 'payment');
+            } else {
+                $row['payment_pack'] = $pack['s_title'];
+            }
+        }
+        return $row;
+    }
+
+    /*function payment_user_form($user = null) {
+        if(OC_ADMIN) {
+            if($user!=null) { // OSCLASS 3.3
+                $packs = ModelPayment::newInstance()->listPacks();
+                $pack = ModelPayment::newInstance()->getUser($user['pk_i_id']);
+                $pack_id = isset($pack['fk_i_pack_id'])?$pack['fk_i_pack_id']:0;
+                ?>
+                <h3 class="render-title"><?php _e('Payment packs', 'payment'); ?></h3>
+                <div class="form-row">
+                    <div class="form-label"><?php _e('Selected pack', 'payment'); ?></div>
+                    <div class="form-controls">
+                        <div class="select-box undefined">
+                            <select name="payment_pack" id="payment_pack" >
+                                <option value="0"><?php _e('No payment pack', 'payment'); ?></option>
+                                <?php foreach($packs as $pack) {
+                                    echo '<option value="'.$pack['pk_i_id'].'" '.($pack['pk_i_id']==$pack_id?'selected="selected"':'').'>'.$pack['s_title'].'</option>';
+                                }; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <?php
+            }
+        }
+    }
+
+    function payment_user_edit($userId) {
+        if(OC_ADMIN) {
+            ModelPayment::newInstance()->updateUserPack($userId, Params::getParam('payment_pack'));
+        }
+    }*/
 
     /**
      * ADD ROUTES (VERSION 3.2+)
      */
     osc_add_route('payment-admin-conf', 'payment/admin/conf', 'payment/admin/conf', osc_plugin_folder(__FILE__).'admin/conf.php');
     osc_add_route('payment-admin-prices', 'payment/admin/prices', 'payment/admin/prices', osc_plugin_folder(__FILE__).'admin/conf_prices.php');
+    osc_add_route('payment-admin-packs', 'payment/admin/packs', 'payment/admin/packs', osc_plugin_folder(__FILE__).'admin/conf_packs.php');
     osc_add_route('payment-publish', 'payment/publish/([0-9]+)', 'payment/publish/{itemId}', osc_plugin_folder(__FILE__).'user/payperpublish.php');
     osc_add_route('payment-premium', 'payment/premium/([0-9]+)', 'payment/premium/{itemId}', osc_plugin_folder(__FILE__).'user/makepremium.php');
     osc_add_route('payment-user-menu', 'payment/menu', 'payment/menu', osc_plugin_folder(__FILE__).'user/menu.php', true);
@@ -209,6 +286,10 @@ Short Name: payments
     osc_add_hook(osc_plugin_path(__FILE__)."_enable", 'payment_update_version');
 
     osc_add_hook('admin_menu_init', 'payment_admin_menu');
+    osc_add_hook('admin_users_table', 'payment_user_table');
+    osc_add_filter('users_processing_row', 'payment_user_row');
+    //osc_add_hook('user_form', 'payment_user_form');
+    //osc_add_hook('user_edit_completed', 'payment_user_edit');
 
     osc_add_hook('init', 'payment_load_lib');
     osc_add_hook('posted_item', 'payment_publish', 10);
