@@ -35,6 +35,11 @@
         * @param string $extra custom variables
         */
         public static function button($amount = '0.00', $description = '', $itemnumber = '101', $extra_array = null) {
+
+            if(osc_get_preference('currency', 'payment')!='BTC') {
+                $amount = osc_file_get_contents("https://blockchain.info/tobtc?currency=".osc_get_preference('currency', 'payment')."&value=".$amount);
+            }
+
             $extra = payment_prepare_custom($extra_array);
             $extra .= 'concept,'.$description.'|';
             $extra .= 'product,'.$itemnumber.'|';
