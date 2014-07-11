@@ -83,7 +83,7 @@
             $data = payment_get_custom(Params::getParam('extra'));
             $transaction_hash = Params::getParam('transaction_hash');
             $value_in_btc = Params::getParam('value') / 100000000;
-            $my_bitcoin_address = osc_get_preference('blockchain_btc_address');
+            $my_bitcoin_address = osc_get_preference('blockchain_btc_address', 'payment');
 
             if (Params::getParam('address')!=$my_bitcoin_address) {
                 return PAYMENT_FAILED;

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+##version 3.0.1 - 11/07/2014
+
+* Fixed bug with Blockchain payment
+
 ##version 2.2.0 - 23/08/2013
 
 * Added CoinJar method of payment
