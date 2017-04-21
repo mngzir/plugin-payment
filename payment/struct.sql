@@ -5,11 +5,11 @@ CREATE TABLE  /*TABLE_PREFIX*/t_payments_log (
     s_code VARCHAR( 255 ) NOT NULL ,
     f_amount FLOAT NOT NULL ,
     i_amount BIGINT(20) NULL,
-    s_currency_code VARCHAR( 3 ) NULL ,
+    s_currency_code VARCHAR( 10 ) NULL ,
     s_email VARCHAR( 200 ) NULL ,
     fk_i_user_id INT NULL ,
     fk_i_item_id INT NULL ,
-    s_source VARCHAR( 10 ) NOT NULL,
+    s_source VARCHAR( 50 ) NOT NULL,
     i_product_type VARCHAR( 15 ) NOT NULL,
 
     PRIMARY KEY(pk_i_id)
